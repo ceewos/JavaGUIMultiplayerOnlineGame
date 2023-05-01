@@ -1,8 +1,6 @@
 import java.io.*;
 import java.net.*; 
 import javax.swing.SwingUtilities;
-
-
 public class Connection  {
     /** Default port number on which this server to be run. */
     private int port;
@@ -10,10 +8,10 @@ public class Connection  {
     private NetworkAdapter networkAdapter;
     public boolean connected = false;
     public boolean hosting = true;
-
     private Thread hostThread;
     private GUIOmok ui ;
     private Controller ctrl;
+    private LoadingScreen loadScreen;
     
     /** Create a new server. */
     public Connection(int port, GUIOmok uiIn, Controller ctrl) {
@@ -93,6 +91,7 @@ public class Connection  {
                         break;
 
                     case PLAY_ACK:
+                        loadScreen.stop();
                         writeUIin("play_ack:"+ x+","+y);
                         if( x == 1 ){//join game request has been accepted
                             ctrl.newGame();
@@ -114,7 +113,7 @@ public class Connection  {
                         ctrl.makeMove(x, y);
                 
                         break;
-                    case MOVE_ACK: 
+                    case MOVE_ACK:
                         writeUIin("move_ack: "+x+","+y);
                         
                         break;
@@ -149,6 +148,9 @@ public class Connection  {
         writeUIout("play:");
         //send play to other log
         this.networkAdapter.writePlay();
+        loadScreen = new LoadingScreen();
+        Thread loadScreenThread = new Thread(loadScreen);
+        loadScreenThread.start();
     }
 
     /* Send a message out */
